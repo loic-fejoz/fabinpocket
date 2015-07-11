@@ -407,5 +407,10 @@
 	    $($(this).attr('href')).addClass('is-active');
 	    return false;
 	});
+
+	$('#menu-button').click(function() {
+	    $('.menu').toggleClass('is-active');
+	    return false;
+	});
     });
 })(jQuery);
