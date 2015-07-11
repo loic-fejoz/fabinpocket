@@ -1,7 +1,6 @@
 ;
 (function(tdl,$) {
-    "use strict";
-    
+    "use strict";    
     var FabInPocket = {};
     var glcanvas = FabInPocket.glcanvas = document.getElementById('previewcanvas');
     glcanvas.width = 640;
@@ -54,7 +53,6 @@
     var heightmapCanvas = document.getElementById("shapecanvas");
     var zMax = undefined;
     var imgTag = document.getElementById("heightmap");
-    var img = new Image();
     var zScale = parseFloat(imgTag.getAttribute('z-scale'));
     
     function sweepTopToBottom(data, img) {
@@ -205,7 +203,10 @@
 	ctx.putImageData(imgData, 0, 0);
     }
     
-    function loadHeights(heightmapCanvas) {
+    function loadHeights(heightmapCanvas, img) {
+	if (img === undefined) {
+	    return;
+	}
 	var hmapCtx = heightmapCanvas.getContext('2d');
 	var imgData = hmapCtx.getImageData(0, 0, img.width, img.height);
 	var data = imgData.data;
@@ -252,19 +253,20 @@
 	exportLink.href = canvas.toDataURL('image/png');
     }
     
-    function loadImage() {
+    function loadImage(img) {
 	img.src = imgTag.src;
 	heightmapCanvas.width = img.width;
 	heightmapCanvas.height = img.height;
 	// heightmapCanvas.width = 640;
 	// heightmapCanvas.height = 400;
+	zMax = undefined;
 	var hmapCtx = heightmapCanvas.getContext('2d');
 	hmapCtx.drawImage(img, 0, 0);
-	var heights = loadHeights(heightmapCanvas);
+	var heights = loadHeights(heightmapCanvas, img);
 	var zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
 	console.log("zScale=" + zScale);
         loadImageToTestCanvas(heights, img, zScale);
-	heights = loadHeights( document.getElementById("testcanvas"));
+	heights = loadHeights( document.getElementById("testcanvas"), img);
 	
 	// Convert heights to vertices
 	var vertices = new Array();
@@ -294,6 +296,7 @@
     
     var squareVerticesBuffer;
     var vertices;
+    var img;
     function initBuffers() {
 	squareVerticesBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
@@ -306,18 +309,21 @@
 	         1.0, -1.0, -1.0,
 	         1.0,  1.0, -1.0
 	];
-	var v = loadImage();
+	var newImg = new Image();
+	var v = loadImage(newImg);
 	if (v !== undefined) {
 	    vertices = v;
 	}
-	prepareSTLExport(vertices, img);
+	prepareSTLExport(vertices, newImg);
 	preparePNGExport();
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+	img = newImg;
     }
     
     var g_fpsTimer;           // object to measure frames per second;
     
     function init() {
+	img = undefined;
   	if (gl) {
     	    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); // See http://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
             gl.clearColor(0.9, 0.9, 0.9, 1.0);  // Set clear color to dark blue, fully opaque
@@ -345,6 +351,10 @@
     var math = tdl.math;
     function loop(frameTime) {
 	FabInPocket.stopLoop = window.requestAnimationFrame( loop );
+
+	if (img === undefined) {
+	    return;
+	}
 	
 	var elapsedTime;
 	if (lastFrameTime == undefined) {
@@ -392,7 +402,8 @@
 	gl.drawArrays(gl.TRIANGLES, 0, Math.floor(vertices.length / 3));
     }
     
-    
+    document.fabinpocketInit = init;
+    document.fabinpocketLoadImage = loadImage;
     document.addEventListener("DOMContentLoaded", init); // Start the cycle
 })(tdl);
 
@@ -400,17 +411,27 @@
     "use strict";
     
     $(document).ready(function() {
-	$('.tabs__tab').click(function() {
+	$('.tabs__tab').click(function(event) {
 	    $('.tabs__tab').removeClass('is-active');
 	    $(this).addClass('is-active');
 	    $('.tabs__panel').removeClass('is-active');
 	    $($(this).attr('href')).addClass('is-active');
+	    event.preventDefault();
 	    return false;
 	});
 
-	$('#menu-button').click(function() {
+	$('#menu-button').click(function(event) {
 	    $('.menu').toggleClass('is-active');
+	    event.preventDefault();
 	    return false;
+	});
+
+	$('#file-upload').change(function (event) {
+	    var filename = $(this).val();
+	    console.log('loading new image: ' + filename);
+	    $("#heightmap").attr('src', filename);
+	    document.fabinpocketInit();
+	    $('.menu').toggleClass('is-active');
 	});
     });
 })(jQuery);
