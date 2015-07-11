@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--HTML5 doctype-->
+<html>
+<head>
+    <title>FabInPocket</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"></meta>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=1, minimal-ui"></meta>
+    <link rel="stylesheet" type="text/css" href="build/icons.css" />
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <link rel="Stylesheet" type="text/css" href="fabinpocket.css" media="screen" />
+  </head>
+  <body>
+    <div id="wrap">
+      <div id="preview" class="part">
+	<div class="headline preview-headline">FabInPocket <span id="fps-container">FPS: <span id='fps'></span></span> - <a id="export" href="#">Download as STL</a></div>
+	<div class="canvas-wrapper" id="preview-wrapper">
+	  <canvas id="previewcanvas">
+	    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+      	  </canvas>
+	  </div>
+    </div>
+      <div id="editpart" class="part">
+	<div class="headline edit-headline">
+	  <ul role="nav" id="nav">
+	    <li>Shape</li>
+	    <li>Engrave</li>
+	    <li>Print</li>
+	  </ul>
+	</div>
+	<div class="canvas-wrapper" id="shape-wrapper">
+	  <canvas id="shapecanvas">
+	    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+	  </canvas>
+	  </div>
+      </div>
+    </div>
+    <img src="test-chat2.png" z-scale="1.1" id="heightmap" style="display:none"/>
+      <canvas id="testcanvas" style="display:none">
+	Your browser doesn't ap pear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+      </canvas>
+  </body>
+  <script id="shader-vs" type="x-shader/x-vertex">
+  attribute vec3 aVertexPosition_modelspace;
+
+  uniform mat4 uMVMatrix;
+  uniform float zMax;
+
+  varying mediump vec4 color;
+
+  void main(void) {
+    gl_Position = uMVMatrix *  vec4(aVertexPosition_modelspace, 1.0);
+    color = vec4(aVertexPosition_modelspace.z / zMax, aVertexPosition_modelspace.z / zMax, aVertexPosition_modelspace.z / zMax, 1.0);
+  }
+</script>
+<!-- color = vec3(1.0 - (aVertexPosition_modelspace.z / 255.0), aVertexPosition_modelspace.z / 255.0, 0.0); -->
+<script id="shader-fs" type="x-shader/x-fragment">
+  varying mediump vec4 color;
+
+  void main(void) {
+    gl_FragColor = color;
+  }
+</script>
+<script type="text/javascript" src="js/tdl/base.js"></script>
+<script type="text/javascript">
+  tdl.require('tdl.fast');
+  tdl.require('tdl.webgl');
+  tdl.require('tdl.programs');
+  tdl.require('tdl.fps');
+  tdl.require('tdl.math');
+  tdl.require('tdl.log');
+</script>
+<script type="text/javascript">
+(function ($) {
+    if (document.jQuery === undefined) {
+      document.jQuery = $;
+    }
+})($);
+</script>
+<script type="text/javascript" src="js/fabinpocket.js"></script>
+</html>
