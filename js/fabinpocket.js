@@ -104,7 +104,7 @@
 	    }
 	}
     }
-
+    
     function isOnSkeleton(original, src, img, x, y) {
 	var countHigherThanMe = 0;
 	var i_xy = x + (y * img.width);
@@ -146,7 +146,7 @@
 	    }
 	}
     }
-
+    
     function sweep(data, img) {
 	sweepTopToBottom(data, img);
 	sweepBottomToTop(data, img);
@@ -170,14 +170,14 @@
 	}
 	// Then compute distance from edges
 	sweep(modifiedHeights, img);
-
+	
 	var skeleton = new Array(heights.length);
 	// Then Init local top, ie skeleton
 	initSkeleton(heights, modifiedHeights, img, skeleton);
-
+	
 	// Then compute distance from skeleton
 	sweep(skeleton, img);
-
+	
 	// Convert distance to imgData
 	var longestDistance = 0;
 	var imgData = ctx.getImageData(0, 0, img.width, img.height);
@@ -204,7 +204,7 @@
 	// Finally display imgData
 	ctx.putImageData(imgData, 0, 0);
     }
-
+    
     function loadHeights(heightmapCanvas) {
 	var hmapCtx = heightmapCanvas.getContext('2d');
 	var imgData = hmapCtx.getImageData(0, 0, img.width, img.height);
@@ -212,7 +212,7 @@
 	// Convert array of RGBA to array of height
 	var heights = new Array();
 	for(var i=0; i < data.length; i+=4) {
-//	    var h = zScale * (data[i] + data[i+1] + data[i+2]) / 3.0; // height is average of Red/Green/Blue.
+	    //	    var h = zScale * (data[i] + data[i+1] + data[i+2]) / 3.0; // height is average of Red/Green/Blue.
 	    var h = zScale * data[i]; // height is only Red, because green is used for debugging.
 	    heights.push(h);
 	    if (zMax == undefined || h > zMax ) {
@@ -221,7 +221,7 @@
 	}
 	return heights;
     }
-
+    
     function prepareSTLExport(vertices, img) {
 	var dx = img.width / 2.0;
 	var dy = img.height / 2.0;
@@ -245,7 +245,7 @@
         var url = window.URL.createObjectURL(blob);
 	exportLink.setAttribute('href', url);
     }
-
+    
     function preparePNGExport() {
 	var exportLink = document.getElementById('export-png');
 	var canvas = document.getElementById("testcanvas");
@@ -265,134 +265,134 @@
 	console.log("zScale=" + zScale);
         loadImageToTestCanvas(heights, img, zScale);
 	heights = loadHeights( document.getElementById("testcanvas"));
-
-		// Convert heights to vertices
-		var vertices = new Array();
-		for(var y=0; y < (img.height-1); y++) {
-			for(var x=0; x < (img.width-1); x++) {
-				var z_xy = heights[x + (y * img.width)];
-				var z_x1y = heights[x + 1 + (y * img.width)];
-				var z_xy1 = heights[x + ((y+1) * img.width)];
-				var z_x1y1 = heights[x + 1 + ((y + 1) * img.width)];
-
-				outputQuad(vertices,
-					[
-						{'x': x - img.width / 2.0, 'y': img.height / 2.0 - y, 'z': z_xy},
-						{'x': x + 1 - img.width / 2.0, 'y': img.height / 2.0 - y, 'z': z_x1y},
-						{'x': x - img.width / 2.0, 'y': img.height / 2.0 - y - 1, 'z': z_xy1},
-						{'x': x + 1 - img.width / 2.0, 'y': img.height / 2.0 - y - 1, 'z': z_x1y1}
-					]);
-			}
-		}
-		if (vertices.length === 0) {
-			vertices = undefined;
-		}
-		return vertices;
-	}
-
-	var horizAspect = 480.0/640.0;
-
-	var squareVerticesBuffer;
-	var vertices;
-	function initBuffers() {
-	  squareVerticesBuffer = gl.createBuffer();
-	  gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
-	  
-	  vertices = [
-	    -1.0,  -1.0,  -1.0,
-	     1.0,  1.0, -1.0,
-	     1.0, -1.0, -1.0,
-	     1.0, -1.0,  1.0,
-	     1.0, -1.0, -1.0,
-	     1.0,  1.0, -1.0
-	  ];
-	  var v = loadImage();
-	  if (v !== undefined) {
-	  	vertices = v;
-	  }
-	    prepareSTLExport(vertices, img);
-	    preparePNGExport();
-	  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-	}
-
-	var g_fpsTimer;           // object to measure frames per second;
-
-  	function init() {
-  		if (gl) {
-    		gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); // See http://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
-        	gl.clearColor(0.9, 0.9, 0.9, 1.0);  // Set clear color to dark blue, fully opaque
-          	gl.clearDepth(1.0);                 // Clear everything
-          	gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-          	gl.enable(gl.CULL_FACE);
-          	gl.depthFunc(gl.LESS);            // Near things obscure far things
-          	initShaders();
-          	initBuffers();
-          	g_fpsTimer = new tdl.fps.FPSTimer();
-          	loop(performance.now());
-        }
-  	}
-
-  	var lastFrameTime = undefined;
-  	var up = new Float32Array([0,0,1]);
-  	var projection = new Float32Array(16);
-  	var view = new Float32Array(16);
-  	var eyePosition = new Float32Array([0, 0, 255]);
-  	var lookAt = new Float32Array([0, 0, 0]);
-  	var viewProjection = new Float32Array(16);
-  	var viewInverse = new Float32Array(16);
-  	var viewProjectionInverse = new Float32Array(16);
-  	var fast = tdl.fast;
-  	var math = tdl.math;
-	function loop(frameTime) {
-		FabInPocket.stopLoop = window.requestAnimationFrame( loop );
-
-		var elapsedTime;
-		if (lastFrameTime == undefined) {
-			elapsedTime = 0.0;
-		} else {
-			elapsedTime = (frameTime - lastFrameTime) * 0.001;
-		}
-		lastFrameTime = frameTime;
-		g_fpsTimer.update(elapsedTime);
-		document.getElementById('fps').innerHTML = g_fpsTimer.averageFPS;
-
-		// Compute new eye position
-		var dist = (heightmapCanvas.clientWidth + heightmapCanvas.clientHeight + zMax) / 3.0;
-		dist = (img.width + img.height + zMax) / 3.0;
-		eyePosition[0] = Math.sin(frameTime * 0.0003) * 1.5 * dist;
-		eyePosition[1] = Math.cos(frameTime * 0.0003) * 1.5 * dist;
-  		eyePosition[2] = dist;
-    	
-		// Clear the canvas before we start drawing on it.
-
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		fast.matrix4.perspective(
-        	projection,
-        	math.degToRad(60),
-        	glcanvas.clientWidth / glcanvas.clientHeight,
-        	1,
-        	5000);
-    	fast.matrix4.lookAt(
-        	view,
-        	eyePosition,
-        	lookAt,
-        	up);
-    	fast.matrix4.mul(viewProjection, view, projection);
-		  
-		gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
-		gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-
-		var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-  		gl.uniformMatrix4fv(mvUniform, false, viewProjection);
+	
+	// Convert heights to vertices
+	var vertices = new Array();
+	for(var y=0; y < (img.height-1); y++) {
+	    for(var x=0; x < (img.width-1); x++) {
+		var z_xy = heights[x + (y * img.width)];
+		var z_x1y = heights[x + 1 + (y * img.width)];
+		var z_xy1 = heights[x + ((y+1) * img.width)];
+		var z_x1y1 = heights[x + 1 + ((y + 1) * img.width)];
 		
-		var zMaxUniform = gl.getUniformLocation(shaderProgram, "zMax");
-  		gl.uniform1f(zMaxUniform, zMax);
-
-		gl.drawArrays(gl.TRIANGLES, 0, Math.floor(vertices.length / 3));
-  	}
-
-
+		outputQuad(vertices,
+			   [
+			       {'x': x - img.width / 2.0, 'y': img.height / 2.0 - y, 'z': z_xy},
+			       {'x': x + 1 - img.width / 2.0, 'y': img.height / 2.0 - y, 'z': z_x1y},
+			       {'x': x - img.width / 2.0, 'y': img.height / 2.0 - y - 1, 'z': z_xy1},
+			       {'x': x + 1 - img.width / 2.0, 'y': img.height / 2.0 - y - 1, 'z': z_x1y1}
+			   ]);
+	    }
+	}
+	if (vertices.length === 0) {
+	    vertices = undefined;
+	}
+	return vertices;
+    }
+    
+    var horizAspect = 480.0/640.0;
+    
+    var squareVerticesBuffer;
+    var vertices;
+    function initBuffers() {
+	squareVerticesBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
+	
+	vertices = [
+		-1.0, -1.0, -1.0,
+	         1.0,  1.0, -1.0,
+	         1.0, -1.0, -1.0,
+	         1.0, -1.0,  1.0,
+	         1.0, -1.0, -1.0,
+	         1.0,  1.0, -1.0
+	];
+	var v = loadImage();
+	if (v !== undefined) {
+	    vertices = v;
+	}
+	prepareSTLExport(vertices, img);
+	preparePNGExport();
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    }
+    
+    var g_fpsTimer;           // object to measure frames per second;
+    
+    function init() {
+  	if (gl) {
+    	    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); // See http://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
+            gl.clearColor(0.9, 0.9, 0.9, 1.0);  // Set clear color to dark blue, fully opaque
+            gl.clearDepth(1.0);                 // Clear everything
+            gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+            gl.enable(gl.CULL_FACE);
+            gl.depthFunc(gl.LESS);            // Near things obscure far things
+            initShaders();
+            initBuffers();
+            g_fpsTimer = new tdl.fps.FPSTimer();
+            loop(performance.now());
+        }
+    }
+    
+    var lastFrameTime = undefined;
+    var up = new Float32Array([0,0,1]);
+    var projection = new Float32Array(16);
+    var view = new Float32Array(16);
+    var eyePosition = new Float32Array([0, 0, 255]);
+    var lookAt = new Float32Array([0, 0, 0]);
+    var viewProjection = new Float32Array(16);
+    var viewInverse = new Float32Array(16);
+    var viewProjectionInverse = new Float32Array(16);
+    var fast = tdl.fast;
+    var math = tdl.math;
+    function loop(frameTime) {
+	FabInPocket.stopLoop = window.requestAnimationFrame( loop );
+	
+	var elapsedTime;
+	if (lastFrameTime == undefined) {
+	    elapsedTime = 0.0;
+	} else {
+	    elapsedTime = (frameTime - lastFrameTime) * 0.001;
+	}
+	lastFrameTime = frameTime;
+	g_fpsTimer.update(elapsedTime);
+	document.getElementById('fps').innerHTML = g_fpsTimer.averageFPS;
+	
+	// Compute new eye position
+	var dist = (heightmapCanvas.clientWidth + heightmapCanvas.clientHeight + zMax) / 3.0;
+	dist = (img.width + img.height + zMax) / 3.0;
+	eyePosition[0] = Math.sin(frameTime * 0.0003) * 1.5 * dist;
+	eyePosition[1] = Math.cos(frameTime * 0.0003) * 1.5 * dist;
+  	eyePosition[2] = dist;
+    	
+	// Clear the canvas before we start drawing on it.
+	
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
+	fast.matrix4.perspective(
+            projection,
+            math.degToRad(60),
+            glcanvas.clientWidth / glcanvas.clientHeight,
+            1,
+            5000);
+    	fast.matrix4.lookAt(
+            view,
+            eyePosition,
+            lookAt,
+            up);
+    	fast.matrix4.mul(viewProjection, view, projection);
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
+	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	
+	var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+  	gl.uniformMatrix4fv(mvUniform, false, viewProjection);
+	
+	var zMaxUniform = gl.getUniformLocation(shaderProgram, "zMax");
+  	gl.uniform1f(zMaxUniform, zMax);
+	
+	gl.drawArrays(gl.TRIANGLES, 0, Math.floor(vertices.length / 3));
+    }
+    
+    
     document.addEventListener("DOMContentLoaded", init); // Start the cycle
 })(tdl);
 
