@@ -40,6 +40,7 @@ What needs to be done:
 * Provides a gallery of samples.
 * Check STL export.
 * Enhance code for better image updating.
+* Make the 2D canvas drawable.
 * Add direct 3D print to a local Octoprint server.
 * Add engrave capability (ie write text or shape).
 * Add user 3D navigation.
