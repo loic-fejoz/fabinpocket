@@ -12,3 +12,5 @@ js/jquery-2.1.4.min.js:
 
 build-dep: js/jquery-2.1.4.min.js js/tdl/base.js
 
+clean:
+	rm *~ js/*~
