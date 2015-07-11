@@ -12,11 +12,8 @@
   <body>
     <div id="wrap">
       <div id="preview" class="part">
-	<div class="headline preview-headline">FabInPocket <span id="fps-container">FPS: <span id='fps'></span> </span> -
-	  Download <a id="export-stl" href="#" download="fabinpocket.stl" >as STL</a>, 
-	  <a id="export-png" href="#" download="fabinpocket.png" >as PNG</a>
-	</div>
-	<div class="canvas-wrapper" id="preview-wrapper">
+	<div class="headline preview-headline">FabInPocket <span id="fps-container">FPS: <span id='fps'></span> </span></div>
+	<div class="canvas-wrapper is-active" id="preview-wrapper">
 	  <canvas id="previewcanvas">
 	    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
       	  </canvas>
@@ -25,16 +22,24 @@
       <div id="editpart" class="part">
 	<div class="headline edit-headline">
 	  <ul role="nav" id="nav">
-	    <li>Shape</li>
-	    <li>Engrave</li>
-	    <li>Print</li>
+	    <li><a href="#shape-wrapper" class="tabs__tab is-active">1. Shape</a></li>
+	    <li><a href="#engrave-tabs" class="tabs__tab">2. Engrave</a></li>
+	    <li><a href="#print-tabs" class="tabs__tab">3. Print</a></li>
 	  </ul>
 	</div>
-	<div class="canvas-wrapper" id="shape-wrapper">
+	<div class="canvas-wrapper tabs__panel is-active" id="shape-wrapper">
 	  <canvas id="shapecanvas">
 	    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
 	  </canvas>
-	  </div>
+	</div>
+	<div class="canvas-wrapper tabs__panel" id="engrave-tabs">
+	  <p>Not yet implemented.</p>
+	</div>
+	<div class="canvas-wrapper tabs__panel" id="print-tabs">
+	  <p>Download <a id="export-stl" href="#" download="fabinpocket.stl" >as STL</a>, 
+	    <a id="export-png" href="#" download="fabinpocket.png" >as PNG</a>.</p>
+	  <p>TODO: Send to Octoprint.</p>
+	</div>
       </div>
     </div>
     <img src="test-chat2.png" z-scale="1.1" id="heightmap" style="display:none"/>

@@ -4,7 +4,6 @@ html, body {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    background-color: #FFF;
 }
 @media all and (orientation:portrait) {
 #wrap {
@@ -125,4 +124,23 @@ canvas {
 .edit-headline {
     padding-top: 0em;
     padding-bottom: 0em;
+}
+
+.tabs__panel {
+    display: none;
+    visibility: hidden;
+}
+
+.is-active {
+    display: inherit;
+    visibility: visible;
+}
+
+.tabs__tab {
+    text-decoration: none;
+    color: black;
+}
+
+.tabs__tab.is-active {
+    text-decoration: underline;
 }

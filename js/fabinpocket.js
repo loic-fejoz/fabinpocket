@@ -1,5 +1,5 @@
 ;
-(function(tdl) {
+(function(tdl,$) {
     "use strict";
     
     var FabInPocket = {};
@@ -109,12 +109,12 @@
 	var countHigherThanMe = 0;
 	var i_xy = x + (y * img.width);
 	var z_xy = src[i_xy];
-	if (original[i_xy] == 0) {
+	if (original[i_xy] === 0) {
 	    return false;
 	}
 	for(var dx=-1; dx <= 1; dx++) {
 	    for(var dy=-1; dy <= 1; dy++) {
-		if (dx == 0 && dy == 0) {
+		if (dx === 0 && dy === 0) {
 		    continue;
 		}
 		var index = (x + dx) + ((y + dy) * img.width);
@@ -196,8 +196,8 @@
 	    /* then scale with initial given heightmap and zScale */
 	    d = zScale * heights[i] / 255.0 * d;
 	    data[4*i] = d;
-	    data[(4*i) + 1] = (skeleton[i] == 0 && heights[i] != 0) ? 255 : d;
-	    data[(4*i) + 2] = (skeleton[i] == 0 && heights[i] != 0) ? 0 : d;
+	    data[(4*i) + 1] = (skeleton[i] === 0 && heights[i] !== 0) ? 255 : d;
+	    data[(4*i) + 2] = (skeleton[i] === 0 && heights[i] !== 0) ? 0 : d;
 	    data[(4*i) + 3] = 255;
 	}
 	console.log("longest distance found: " + longestDistance);
@@ -284,7 +284,7 @@
 					]);
 			}
 		}
-		if (vertices.length == 0) {
+		if (vertices.length === 0) {
 			vertices = undefined;
 		}
 		return vertices;
@@ -393,5 +393,19 @@
   	}
 
 
-  	document.addEventListener("DOMContentLoaded", init); // Start the cycle
+    document.addEventListener("DOMContentLoaded", init); // Start the cycle
 })(tdl);
+
+(function($) {
+    "use strict";
+    
+    $(document).ready(function() {
+	$('.tabs__tab').click(function() {
+	    $('.tabs__tab').removeClass('is-active');
+	    $(this).addClass('is-active');
+	    $('.tabs__panel').removeClass('is-active');
+	    $($(this).attr('href')).addClass('is-active');
+	    return false;
+	});
+    });
+})(jQuery);
