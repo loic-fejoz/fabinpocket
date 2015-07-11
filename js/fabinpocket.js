@@ -240,10 +240,16 @@
 	    sb += '  endloop\nendfacet\n';
 	}
 	sb += 'ensolid\n';
-	var exportLink = document.getElementById('export');
+	var exportLink = document.getElementById('export-stl');
 	var blob = new Blob([sb], {type: "octet/stream"});
         var url = window.URL.createObjectURL(blob);
 	exportLink.setAttribute('href', url);
+    }
+
+    function preparePNGExport() {
+	var exportLink = document.getElementById('export-png');
+	var canvas = document.getElementById("testcanvas");
+	exportLink.href = canvas.toDataURL('image/png');
     }
     
     function loadImage() {
@@ -305,6 +311,7 @@
 	  	vertices = v;
 	  }
 	    prepareSTLExport(vertices, img);
+	    preparePNGExport();
 	  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 	}
 
