@@ -561,14 +561,28 @@
 	    ev.canvasY = ev.offsetY * canvas.height / rect.height;
 	}
 	
+	var toolSize = 10;
 
+	function drawCircle(context, ev) {
+	    var radius = toolSize / 2.0;
+	    context.moveTo(ev.canvasX, ev.canvasY);
+	    context.beginPath();
+	    context.lineWidth = 1;
+	    context.fillStyle = 'white';
+	    context.strokeStyle = 'white';
+	    context.arc(ev.canvasX, ev.canvasY, radius, 0, 2 * Math.PI, true);
+	    context.fill();
+	}
+	
 	$('#shapecanvas')
 	    .on('touchstart mousedown', function(ev) {
-		context.beginPath();
-		context.lineWidth = 10;
-		context.strokeStyle = 'white';
 		updateCanvasCoordinates(ev);
-		context.moveTo(ev.canvasX, ev.canvasY);
+		drawCircle(context, ev);
+		context.beginPath();
+		context.lineWidth = toolSize;
+		context.fillStyle = 'white';
+		context.strokeStyle = 'white';
+		context.moveTo(ev.canvasX, ev.canvasY);		
 		tool.started = true;
 		delayedUpdate3D();
 	    })
@@ -585,6 +599,7 @@
 		    updateCanvasCoordinates(ev);
 		    context.lineTo(ev.canvasX, ev.canvasY);
 		    context.stroke();
+		    drawCircle(context, ev);
 		}
 		tool.started = false;
 		delayedUpdate3D();
