@@ -631,5 +631,9 @@
 	shapecanvas[0].addEventListener('touchstart', pencil.start);
 	shapecanvas[0].addEventListener('touchmove', pencil.move);
 	shapecanvas[0].addEventListener('touchen', pencil.end);
+
+	$('#tool-size').on('change', function (evt) {
+	    pencil.size = parseFloat($(this).val());
+	});
     });
 })(jQuery);
