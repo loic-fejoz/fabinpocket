@@ -12,6 +12,10 @@
     
     var shaderProgram;
     var vertexPositionAttribute;
+
+    /**
+     * Load scripts from HTML and compile them as shader program.
+     */
     function initShaders() {
 	shaderProgram = tdl.programs.loadProgram(
 	    document.getElementById("shader-vs").textContent,
@@ -22,14 +26,25 @@
 	vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition_modelspace");
 	gl.enableVertexAttribArray(vertexPositionAttribute);
     }
-    
+
+    /**
+     * Push coordinates of point into vertices.
+     * @param {Object} point to push
+     * @param {Number[]} vertices to push to.
+     */
     function outputPoint(vertices, point) {
 	vertices.push(point.x);
 	vertices.push(point.y);
 	vertices.push(point.z);
 	//console.log(point);
     }
-    
+
+    /**
+     * If above level, push two triangles to vertices,
+     * ie one for the bottom face and one for up face.
+     * @param {Object[3]} points to push
+     * @param {Number[]} vertices to push to
+     */
     function outputTriangle(vertices, points) {
 	// assert(points.length == 3);
 	if (points[0].z > 0 || points[1].z > 0 || points[2].z > 0) {
@@ -43,7 +58,12 @@
 	    outputPoint(vertices, {x: points[1].x, y: points[1].y, z: 0.0});
 	}
     }
-    
+
+    /**
+     * Push two triangles given 4 points
+     * @param {Object[4]} points to build triangles from
+     * @param {Number[]} vertices to push to
+     */
     function outputQuad(vertices, points) {
 	// assert(points.length == 4);
 	outputTriangle(vertices, [points[0], points[3], points[1]]);
@@ -54,6 +74,9 @@
     var zMax = undefined;
     var imgTag = document.getElementById("heightmap");
     var zScale = parseFloat(imgTag.getAttribute('z-scale'));
+
+    /*========================== Distance computation ========================================*/
+
     
     function sweepTopToBottom(data, img) {
 	for(var x=0; x < (img.width-1); x++) {
@@ -102,7 +125,22 @@
 	    }
 	}
     }
+
+    /**
+     * Compute an approximate distance.
+     * See A GENERAL ALGORITHM FOR COMPUTING DISTANCE TRANSFORMS IN LINEAR TIME,
+     * by A. MEIJSTER‚ J.B.T.M. ROERDINK and W.H. HESSELINK
+     */
+    function sweep(data, img) {
+	sweepTopToBottom(data, img);
+	sweepBottomToTop(data, img);
+	sweepLeftToRight(data, img);
+	sweepRightToLeft(data, img);
+    }
     
+    /**
+     * Return true if the point at given coordinate is a local maximum.
+     */
     function isOnSkeleton(original, src, img, x, y) {
 	var countHigherThanMe = 0;
 	var i_xy = x + (y * img.width);
@@ -144,16 +182,13 @@
 	    }
 	}
     }
-    
-    function sweep(data, img) {
-	sweepTopToBottom(data, img);
-	sweepBottomToTop(data, img);
-	sweepLeftToRight(data, img);
-	sweepRightToLeft(data, img);
-    }
-    
-    function loadImageToTestCanvas(heights, img, zScale) {
-	var canvas = document.getElementById("testcanvas");
+
+    /**
+     * Compute the implicit heightmap into #computedheightmapcanvas
+     * from the given array of heights.
+     */
+    function loadImageToComputedheightmapcanvas(heights, img, zScale) {
+	var canvas = document.getElementById("computedheightmapcanvas");
 	canvas.width = img.width;
 	canvas.height = img.height;
 	var img = new Image();
@@ -202,7 +237,11 @@
 	// Finally display imgData
 	ctx.putImageData(imgData, 0, 0);
     }
-    
+
+    /**
+     * Convert the image #heightmap to an array of heights.
+     * @return {numbers[img.width * img.height]} array of heights
+     */
     function loadHeights(heightmapCanvas, img) {
 	if (img === undefined) {
 	    return;
@@ -222,7 +261,10 @@
 	}
 	return heights;
     }
-    
+
+    /**
+     * Create STL Blob from vertices, and link #export-stl to it.
+     */
     function prepareSTLExport(vertices, img) {
 	var dx = img.width / 2.0;
 	var dy = img.height / 2.0;
@@ -246,10 +288,13 @@
         var url = window.URL.createObjectURL(blob);
 	exportLink.setAttribute('href', url);
     }
-    
+
+    /**
+     * Link #export-png to computed heightmap.
+     */
     function preparePNGExport() {
 	var exportLink = document.getElementById('export-png');
-	var canvas = document.getElementById("testcanvas");
+	var canvas = document.getElementById("computedheightmapcanvas");
 	exportLink.href = canvas.toDataURL('image/png');
     }
     
@@ -265,8 +310,8 @@
 	var heights = loadHeights(heightmapCanvas, img);
 	var zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
 	console.log("zScale=" + zScale);
-        loadImageToTestCanvas(heights, img, zScale);
-	heights = loadHeights( document.getElementById("testcanvas"), img);
+        loadImageToComputedheightmapcanvas(heights, img, zScale);
+	heights = loadHeights( document.getElementById("computedheightmapcanvas"), img);
 	
 	// Convert heights to vertices
 	var vertices = new Array();
