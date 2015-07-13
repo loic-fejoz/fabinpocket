@@ -300,15 +300,18 @@
 	exportLink.href = canvas.toDataURL('image/png');
     }
     
-    function loadImage(img) {
-	img.src = imgTag.src;
-	heightmapCanvas.width = img.width;
-	heightmapCanvas.height = img.height;
+    function reload3D(img, loadImageIntoCanvas) {
 	// heightmapCanvas.width = 640;
 	// heightmapCanvas.height = 400;
-	zMax = undefined;
 	var hmapCtx = heightmapCanvas.getContext('2d');
-	hmapCtx.drawImage(img, 0, 0);
+	if (loadImageIntoCanvas) {
+	    img.src = imgTag.src;
+	    heightmapCanvas.width = img.width;
+	    heightmapCanvas.height = img.height;
+	    hmapCtx.drawImage(img, 0, 0);
+	}
+
+	zMax = undefined;
 	var heights = loadHeights(heightmapCanvas, img);
 	var zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
 	console.log("zScale=" + zScale);
@@ -344,7 +347,7 @@
     var squareVerticesBuffer;
     var vertices;
     var img;
-    function initBuffers() {
+    function initBuffers(loadImageIntoCanvas) {
 	squareVerticesBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
 	
@@ -356,8 +359,8 @@
 	         1.0, -1.0, -1.0,
 	         1.0,  1.0, -1.0
 	];
-	var newImg = new Image();
-	var v = loadImage(newImg);
+	var newImg = loadImageIntoCanvas ? new Image() : img;
+	var v = reload3D(newImg, loadImageIntoCanvas);
 	if (v !== undefined) {
 	    vertices = v;
 	}
@@ -379,7 +382,7 @@
             gl.enable(gl.CULL_FACE);
             gl.depthFunc(gl.LESS);            // Near things obscure far things
             initShaders();
-            initBuffers();
+            initBuffers(true);
             g_fpsTimer = new tdl.fps.FPSTimer();
             loop(performance.now());
         }
@@ -457,10 +460,11 @@
 (function($) {
     "use strict";
 
-    function update3D() {
+    function update3D(loadImageIntoCanvas) {
 	console.log("Updating...");
 	$('#loading-container').addClass('fa fa-spinner fa-spin');
-	document.fabinpocketUpdate3D();
+	//TODO: launch in background?
+	document.fabinpocketUpdate3D(loadImageIntoCanvas);
 	$('#loading-container').removeClass('fa fa-spinner fa-spin');
     }
     
@@ -470,7 +474,7 @@
          * Update 3D view when image #heightmap is changed.
          */
 	$("#heightmap").on('load', function() {
-	    update3D();
+	    update3D(true);
 	})
 
 	/**
@@ -509,7 +513,7 @@
 	    $("#heightmap").attr('src', urlObject.createObjectURL(file));
 	    $("#heightmap").each(function() {
 		if (this.complete) {
-		    update3D();
+		    update3D(true);
 		} else {
 		    console.log('not complete');
 		}
@@ -534,7 +538,6 @@
 
 	$('#shapecanvas')
 	    .on('touchstart mousedown', function(ev) {
-		console.log('click' + ev);
 		context.beginPath();
 		context.lineWidth = 10;
 		context.strokeStyle = 'white';
@@ -545,20 +548,18 @@
 	    .on('touchmove mousemove', function (ev) {
 		if (tool.started) {
 		    updateCanvasCoordinates(ev);
-		    console.log(ev);
 		    context.lineTo(ev.canvasX, ev.canvasY);
 		    context.stroke();
 		}
 	    })
 	    .on('touchup mouseup', function (ev) {
-		console.log('stop');		
 		if (tool.started) {
 		    updateCanvasCoordinates(ev);
 		    context.lineTo(ev.canvasX, ev.canvasY);
 		    context.stroke();
 		}
 		tool.started = false;
-		update3D();
+		update3D(false);
 	    });	
     });
 })(jQuery);
