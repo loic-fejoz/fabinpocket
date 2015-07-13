@@ -456,6 +456,18 @@
     "use strict";
     
     $(document).ready(function() {
+
+	/**
+         * Update 3D view when image #heightmap is changed.
+         */
+	$("#heightmap").on('load', function() {
+	    console.log("Updating...");
+	    document.fabinpocketUpdate3D();
+	})
+
+	/**
+         * Manage tabs
+         */
 	$('.tabs__tab').click(function(event) {
 	    $('.tabs__tab').removeClass('is-active');
 	    $(this).addClass('is-active');
@@ -465,27 +477,36 @@
 	    return false;
 	});
 
+	/**
+         * Manage menu
+         */	
 	$('#menu-button').click(function(event) {
 	    $('.menu').toggleClass('is-active');
 	    event.preventDefault();
 	    return false;
 	});
 
+	/**
+         * Manage file upload
+         */
+	var urlObject = window.URL || window.webkitURL;
 	$('#file-upload').change(function (event) {
 	    var filename = $(this).val();
+	    var file = this.files[0];
+	    
 	    console.log('loading new image: ' + filename);
 	    // Update 3D view once image loaded.
 	    // See http://stackoverflow.com/questions/3877027/jquery-callback-on-image-load-even-when-the-image-is-cached
-	    $("#heightmap")
-		.attr('src', filename)
-		.one('load', function() {
+	    // See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications
+	    $("#heightmap").attr('src', urlObject.createObjectURL(file));
+	    $("#heightmap").each(function() {
+		if (this.complete) {
+		    console.log("Updating...");
 		    document.fabinpocketUpdate3D();
-		})
-		.each(function() {
-		    if (this.complete) {
-			$(this).load();
-		    }
-		});
+		} else {
+		    console.log('not complete');
+		}
+	    });	    
 	    $('.menu').toggleClass('is-active');
 	});
     });
