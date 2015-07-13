@@ -136,6 +136,8 @@
 	sweepLeftToRight(data, img);
 	sweepRightToLeft(data, img);
     }
+
+    /*========================== Image to 3D ========================================*/
     
     /**
      * Return true if the point at given coordinate is a local maximum.
@@ -454,15 +456,21 @@
 
 (function($) {
     "use strict";
+
+    function update3D() {
+	console.log("Updating...");
+	$('#loading-container').addClass('fa fa-spinner fa-spin');
+	document.fabinpocketUpdate3D();
+	$('#loading-container').removeClass('fa fa-spinner fa-spin');
+    }
     
     $(document).ready(function() {
-
+	
 	/**
          * Update 3D view when image #heightmap is changed.
          */
 	$("#heightmap").on('load', function() {
-	    console.log("Updating...");
-	    document.fabinpocketUpdate3D();
+	    update3D();
 	})
 
 	/**
@@ -501,13 +509,56 @@
 	    $("#heightmap").attr('src', urlObject.createObjectURL(file));
 	    $("#heightmap").each(function() {
 		if (this.complete) {
-		    console.log("Updating...");
-		    document.fabinpocketUpdate3D();
+		    update3D();
 		} else {
 		    console.log('not complete');
 		}
 	    });	    
 	    $('.menu').toggleClass('is-active');
 	});
+
+	/*========================== Canvas drawing ========================================*/
+	var tool = {};
+	var context = $('#shapecanvas')[0].getContext('2d');
+
+	/**
+	 * Convert event's coordinates to canvas coordinates as canvas may be stretched.
+	 */
+	function updateCanvasCoordinates(ev) {
+	    var canvas = $('#shapecanvas')[0];
+	    var rect = canvas.getBoundingClientRect();
+	    ev.canvasX = ev.offsetX * canvas.width / rect.width;
+	    ev.canvasY = ev.offsetY * canvas.height / rect.height;
+	}
+	
+
+	$('#shapecanvas')
+	    .on('touchstart mousedown', function(ev) {
+		console.log('click' + ev);
+		context.beginPath();
+		context.lineWidth = 10;
+		context.strokeStyle = 'white';
+		updateCanvasCoordinates(ev);
+		context.moveTo(ev.canvasX, ev.canvasY);
+		tool.started = true;
+	    })
+	    .on('touchmove mousemove', function (ev) {
+		if (tool.started) {
+		    updateCanvasCoordinates(ev);
+		    console.log(ev);
+		    context.lineTo(ev.canvasX, ev.canvasY);
+		    context.stroke();
+		}
+	    })
+	    .on('touchup mouseup', function (ev) {
+		console.log('stop');		
+		if (tool.started) {
+		    updateCanvasCoordinates(ev);
+		    context.lineTo(ev.canvasX, ev.canvasY);
+		    context.stroke();
+		}
+		tool.started = false;
+		update3D();
+	    });	
     });
 })(jQuery);
