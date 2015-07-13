@@ -533,6 +533,20 @@
 	    $('.menu').toggleClass('is-active');
 	});
 
+	$('#white-pencil-btn').click(function (event) {
+	    pencil.color = 'white';
+	    $('.menu').toggleClass('is-active');
+	    event.preventDefault();
+	    return false;
+	});
+
+	$('#black-eraser-btn').click(function (event) {
+	    pencil.color = 'black';
+	    $('.menu').toggleClass('is-active');
+	    event.preventDefault();
+	    return false;
+	});
+	
 	/**
          * Manage canvas clearance
          */
@@ -563,13 +577,14 @@
 	
 	var pencil = {
 	    size: 10,
+	    color: 'white',
 	    start: function(ev) {
 		updateCanvasCoordinates(ev);
 		drawCircle(context, ev);
 		context.beginPath();
 		context.lineWidth = pencil.size;
-		context.fillStyle = 'white';
-		context.strokeStyle = 'white';
+		context.fillStyle = pencil.color;
+		context.strokeStyle = pencil.color;
 		context.moveTo(ev.canvasX, ev.canvasY);		
 		tool.started = true;
 		delayedUpdate3D();
@@ -602,8 +617,8 @@
 	    context.moveTo(ev.canvasX, ev.canvasY);
 	    context.beginPath();
 	    context.lineWidth = 1;
-	    context.fillStyle = 'white';
-	    context.strokeStyle = 'white';
+	    context.fillStyle = pencil.color;
+	    context.strokeStyle = pencil.color;
 	    context.arc(ev.canvasX, ev.canvasY, radius, 0, 2 * Math.PI, true);
 	    context.fill();
 	}
