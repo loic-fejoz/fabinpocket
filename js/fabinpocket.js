@@ -73,7 +73,6 @@
     var heightmapCanvas = document.getElementById("shapecanvas");
     var zMax = undefined;
     var imgTag = document.getElementById("heightmap");
-    var zScale = parseFloat(imgTag.getAttribute('z-scale'));
 
     /*========================== Distance computation ========================================*/
 
@@ -249,6 +248,7 @@
 	var hmapCtx = heightmapCanvas.getContext('2d');
 	var imgData = hmapCtx.getImageData(0, 0, img.width, img.height);
 	var data = imgData.data;
+	var zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
 	// Convert array of RGBA to array of height
 	var heights = new Array();
 	for(var i=0; i < data.length; i+=4) {
