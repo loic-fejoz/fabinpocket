@@ -467,6 +467,18 @@
 	document.fabinpocketUpdate3D(loadImageIntoCanvas);
 	$('#loading-container').removeClass('fa fa-spinner fa-spin');
     }
+
+    function update3DFromCanvas() {
+	update3D(false);
+    }
+
+    var update3DTimeout = undefined;
+    function delayedUpdate3D() {
+	if (update3DTimeout !== undefined) {
+	    window.clearTimeout(update3DTimeout);
+	}
+	update3DTimeout = window.setTimeout(update3DFromCanvas, 750);
+    }
     
     $(document).ready(function() {
 	
@@ -530,7 +542,7 @@
 	    var context = canvas.getContext('2d');
 	    context.fillStyle='black';
 	    context.fillRect(0, 0, canvas.width, canvas.height);
-	    update3D(false);
+	    delayedUpdate3D();
 	    evt.preventDefault();
 	    return false;
 	});
@@ -558,12 +570,14 @@
 		updateCanvasCoordinates(ev);
 		context.moveTo(ev.canvasX, ev.canvasY);
 		tool.started = true;
+		delayedUpdate3D();
 	    })
 	    .on('touchmove mousemove', function (ev) {
 		if (tool.started) {
 		    updateCanvasCoordinates(ev);
 		    context.lineTo(ev.canvasX, ev.canvasY);
 		    context.stroke();
+		    delayedUpdate3D();
 		}
 	    })
 	    .on('touchup mouseup', function (ev) {
@@ -573,7 +587,7 @@
 		    context.stroke();
 		}
 		tool.started = false;
-		update3D(false);
+		delayedUpdate3D();
 	    });	
     });
 })(jQuery);
