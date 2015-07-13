@@ -1,7 +1,8 @@
 ;
 (function(tdl,$) {
     "use strict";    
-    var FabInPocket = {};
+    var FabInPocket = {zScale: 1.0};
+    document.FabInPocket = FabInPocket;
     var glcanvas = FabInPocket.glcanvas = document.getElementById('previewcanvas');
     glcanvas.width = 640;
     glcanvas.height = 400;
@@ -250,7 +251,7 @@
 	var hmapCtx = heightmapCanvas.getContext('2d');
 	var imgData = hmapCtx.getImageData(0, 0, img.width, img.height);
 	var data = imgData.data;
-	var zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
+	var zScale = FabInPocket.zScale;
 	// Convert array of RGBA to array of height
 	var heights = new Array();
 	for(var i=0; i < data.length; i+=4) {
@@ -309,11 +310,15 @@
 	    heightmapCanvas.width = img.width;
 	    heightmapCanvas.height = img.height;
 	    hmapCtx.drawImage(img, 0, 0);
+	    FabInPocket.zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
+	    if (FabInPocket.zScale === undefined) {
+		FabInPocket.zScale = 1.0;
+	    }
 	}
 
 	zMax = undefined;
 	var heights = loadHeights(heightmapCanvas, img);
-	var zScale = parseFloat(document.getElementById('heightmap').getAttribute('z-scale'));
+	var zScale = FabInPocket.zScale;
 	console.log("zScale=" + zScale);
         loadImageToComputedheightmapcanvas(heights, img, zScale);
 	heights = loadHeights( document.getElementById("computedheightmapcanvas"), img);
@@ -635,5 +640,10 @@
 	$('#tool-size').on('change', function (evt) {
 	    pencil.size = parseFloat($(this).val());
 	});
+
+	$('#z-scale').on('change', function (evt) {
+	    document.FabInPocket.zScale = parseFloat($(this).val());
+	    delayedUpdate3D();
+	});	
     });
 })(jQuery);
