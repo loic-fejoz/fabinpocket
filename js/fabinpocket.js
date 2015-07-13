@@ -448,7 +448,7 @@
     }
     
     document.fabinpocketInit = init;
-    document.fabinpocketLoadImage = loadImage;
+    document.fabinpocketUpdate3D = initBuffers;
     document.addEventListener("DOMContentLoaded", init); // Start the cycle
 })(tdl);
 
@@ -474,8 +474,18 @@
 	$('#file-upload').change(function (event) {
 	    var filename = $(this).val();
 	    console.log('loading new image: ' + filename);
-	    $("#heightmap").attr('src', filename);
-	    document.fabinpocketInit();
+	    // Update 3D view once image loaded.
+	    // See http://stackoverflow.com/questions/3877027/jquery-callback-on-image-load-even-when-the-image-is-cached
+	    $("#heightmap")
+		.attr('src', filename)
+		.one('load', function() {
+		    document.fabinpocketUpdate3D();
+		})
+		.each(function() {
+		    if (this.complete) {
+			$(this).load();
+		    }
+		});
 	    $('.menu').toggleClass('is-active');
 	});
     });
