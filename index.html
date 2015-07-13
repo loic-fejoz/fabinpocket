@@ -12,7 +12,7 @@
   <body>
     <div id="wrap">
       <div id="preview" class="part">
-	<div class="headline preview-headline"><h1>FabInPocket</h1> <span id="fps-container">FPS: <span id='fps'></span> </span> <a href="https://github.com/loic-fejoz/fabinpocket">Documentation</a></div>
+	<div class="headline preview-headline"><h1>FabInPocket</h1> <i id="loading-container"></i><span id="fps-container">FPS: <span id='fps'></span> </span> <a href="https://github.com/loic-fejoz/fabinpocket">Documentation</a></div>
 	<div class="canvas-wrapper is-active" id="preview-wrapper">
 	  <canvas id="previewcanvas">
 	    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
@@ -29,6 +29,7 @@
 	      <div class="menu">
 		<ul>
 		  <li><i class="fa fa-upload"></i> <input type="file" id="file-upload" /></li>
+		  <li><button id="clear-btn">Clear</button></li>
 		</ul>
 	      </div>
 	    </li>
