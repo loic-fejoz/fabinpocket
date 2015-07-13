@@ -573,9 +573,9 @@
 	    context.arc(ev.canvasX, ev.canvasY, radius, 0, 2 * Math.PI, true);
 	    context.fill();
 	}
-	
-	$('#shapecanvas')
-	    .on('touchstart mousedown', function(ev) {
+
+	var pencil = {
+	    start: function(ev) {
 		updateCanvasCoordinates(ev);
 		drawCircle(context, ev);
 		context.beginPath();
@@ -585,24 +585,37 @@
 		context.moveTo(ev.canvasX, ev.canvasY);		
 		tool.started = true;
 		delayedUpdate3D();
-	    })
-	    .on('touchmove mousemove', function (ev) {
+		ev.preventDefault();
+	    },
+	    move: function (ev) {
 		if (tool.started) {
 		    updateCanvasCoordinates(ev);
 		    context.lineTo(ev.canvasX, ev.canvasY);
 		    context.stroke();
 		    delayedUpdate3D();
+		    ev.preventDefault();
 		}
-	    })
-	    .on('touchup mouseup', function (ev) {
+	    },
+	    end: function (ev) {
 		if (tool.started) {
 		    updateCanvasCoordinates(ev);
 		    context.lineTo(ev.canvasX, ev.canvasY);
 		    context.stroke();
 		    drawCircle(context, ev);
+		    delayedUpdate3D();
+		    ev.preventDefault();
 		}
 		tool.started = false;
-		delayedUpdate3D();
-	    });	
+	    }
+	}
+	
+	var shapecanvas = $('#shapecanvas');
+	shapecanvas
+	    .on('mousedown', pencil.start)
+	    .on('touchmove mousemove', pencil.move)
+	    .on('touchup mouseup', pencil.end);
+	shapecanvas[0].addEventListener('touchstart', pencil.start);
+	shapecanvas[0].addEventListener('touchmove', pencil.move);
+	shapecanvas[0].addEventListener('touchen', pencil.end);
     });
 })(jQuery);
