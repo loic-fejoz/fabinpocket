@@ -521,6 +521,20 @@
 	    $('.menu').toggleClass('is-active');
 	});
 
+	/**
+         * Manage canvas clearance
+         */
+	$('#clear-btn').click(function (evt) {
+	    $('.menu').toggleClass('is-active');
+	    var canvas = $('#shapecanvas')[0];
+	    var context = canvas.getContext('2d');
+	    context.fillStyle='black';
+	    context.fillRect(0, 0, canvas.width, canvas.height);
+	    update3D(false);
+	    evt.preventDefault();
+	    return false;
+	});
+	
 	/*========================== Canvas drawing ========================================*/
 	var tool = {};
 	var context = $('#shapecanvas')[0].getContext('2d');
