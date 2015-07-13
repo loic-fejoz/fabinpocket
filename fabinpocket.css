@@ -168,10 +168,18 @@ h1 {
     margin: 0;
     border: 1px solid;
     background-color: white;
-    width: 30%;
+    width: 40%;
     padding: 1em;
 }
 
+.menu li {
+    list-style-type: none;
+}
+
+.menu li button {
+    margin: 0.5em;
+    padding: 1.5em;
+}
 
 .is-active {
     display: inherit;
