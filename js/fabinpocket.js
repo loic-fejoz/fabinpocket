@@ -233,6 +233,8 @@
 	    data[4*i] = d;
 	    data[(4*i) + 1] = (skeleton[i] === 0 && heights[i] !== 0) ? 255 : d;
 	    data[(4*i) + 2] = (skeleton[i] === 0 && heights[i] !== 0) ? 0 : d;
+	    // data[(4*i) + 1] = d;
+	    // data[(4*i) + 2] = d;
 	    data[(4*i) + 3] = 255;
 	}
 	console.log("longest distance found: " + longestDistance);
@@ -276,16 +278,16 @@
 	sb += 'solid fabinpocket\n';
 	var i=0;
 	while (i < vertices.length) {
-	    sb += 'facet normal 0.0 0.0 0.0\n  outer loop\n';
+	    sb += ' facet normal 0.0 0.0 0.0\n  outer loop\n';
 	    sb += '    vertex ' + (dx + vertices[i]) + ' ' + (dy + vertices[i+1]) + ' ' + vertices[i+2] + '\n';
 	    i += 3;
 	    sb += '    vertex ' + (dx + vertices[i]) + ' ' + (dy + vertices[i+1]) + ' ' + vertices[i+2] + '\n';
 	    i += 3;
 	    sb += '    vertex ' + (dx + vertices[i]) + ' ' + (dy + vertices[i+1]) + ' ' + vertices[i+2] + '\n';
 	    i += 3;
-	    sb += '  endloop\nendfacet\n';
+	    sb += '  endloop\n endfacet\n';
 	}
-	sb += 'ensolid\n';
+	sb += 'ensolid fabinpocket\n';
 	var exportLink = document.getElementById('export-stl');
 	var blob = new Blob([sb], {type: "octet/stream"});
         var url = window.URL.createObjectURL(blob);
