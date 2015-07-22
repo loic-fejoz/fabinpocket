@@ -185,3 +185,7 @@ h1 {
     display: inherit;
     visibility: visible;
 }
+
+#menu-button {
+    text-decoration: none;
+}
