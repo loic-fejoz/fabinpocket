@@ -63,27 +63,6 @@
       Your browser doesn't ap pear to support the HTML5 <code>&lt;canvas&gt;</code> element.
     </canvas>
   </body>
-  <script id="shader-vs" type="x-shader/x-vertex">
-  attribute vec3 aVertexPosition_modelspace;
-
-  uniform mat4 uMVMatrix;
-  uniform float zMax;
-
-  varying mediump vec4 color;
-
-  void main(void) {
-    gl_Position = uMVMatrix *  vec4(aVertexPosition_modelspace, 1.0);
-    color = vec4(aVertexPosition_modelspace.z / zMax, aVertexPosition_modelspace.z / zMax, aVertexPosition_modelspace.z / zMax, 1.0);
-  }
-</script>
-<!-- color = vec3(1.0 - (aVertexPosition_modelspace.z / 255.0), aVertexPosition_modelspace.z / 255.0, 0.0); -->
-<script id="shader-fs" type="x-shader/x-fragment">
-  varying mediump vec4 color;
-
-  void main(void) {
-    gl_FragColor = color;
-  }
-</script>
 <script type="text/javascript" src="js/three.min.js"></script>
 <script type="text/javascript">
 (function ($) {
