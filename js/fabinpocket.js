@@ -2,6 +2,7 @@
 (function($) {
     "use strict";
 
+    /*========================== FPS computation ========================================*/
     const TIMER_NB_FRAMES = 16;
     function FPSTimer() {
 	this.timeTable = [];
@@ -24,6 +25,8 @@
 	this.averageFPS = Math.floor((1.0 / (this.totalTime / TIMER_NB_FRAMES)) + 0.5);
     };
     var fpsTimer = new FPSTimer();
+
+    /*========================== Initialization ========================================*/
     
     var FabInPocket = {zScale: 1.0};
     document.FabInPocket = FabInPocket;
@@ -32,20 +35,8 @@
     var shaderProgram;
     var vertexPositionAttribute;
 
-    /**
-     * Load scripts from HTML and compile them as shader program.
-     */
-    function initShaders() {
-	shaderProgram = tdl.programs.loadProgram(
-	    document.getElementById("shader-vs").textContent,
-	    document.getElementById("shader-fs").textContent).program;
-	
-	gl.useProgram(shaderProgram);
-	
-	vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition_modelspace");
-	gl.enableVertexAttribArray(vertexPositionAttribute);
-    }
-
+    /*====================== Helpers to convert Heightmap to STL   ====================*/
+    
     /**
      * Push coordinates of point into vertices.
      * @param {Object} point to push
