@@ -360,7 +360,7 @@
     var camera = new THREE.PerspectiveCamera( 75, 600.0 / 400.0, 0.1, 50000 );
     var renderer = new THREE.WebGLRenderer({canvas: glcanvas});
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshPhongMaterial({ color: 0x68688a, ambient: 0xffffff, shininess: 30, reflectivity: 30, wireframe: true });
+    var material = new THREE.MeshPhongMaterial({ color: 0x68688a, ambient: 0xffffff, shininess: 30, reflectivity: 30});
     var cube = new THREE.Mesh( geometry, material );
     var mesh = undefined;
 
