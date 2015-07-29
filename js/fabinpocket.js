@@ -319,6 +319,19 @@
     $('#export-png').on('click', function () {
 	preparePNGExport();
     });
+
+    /**
+     * Link #export-shape to drawings.
+     */
+    function prepareShapePNGExport() {
+	var exportLink = document.getElementById('export-shape');
+	var canvas = document.getElementById("shapecanvas");
+	exportLink.href = canvas.toDataURL('image/png');
+    }
+
+    $('#export-png').on('click', function () {
+	prepareShapePNGExport();
+    });
     
     function reload3D(img, loadImageIntoCanvas) {
 	// heightmapCanvas.width = 640;
