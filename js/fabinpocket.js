@@ -360,7 +360,7 @@
     var camera = new THREE.PerspectiveCamera( 75, 600.0 / 400.0, 0.1, 50000 );
     var renderer = new THREE.WebGLRenderer({canvas: glcanvas});
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshPhongMaterial({ color: 0xff0000, ambient: "white", shininess: 30, reflectivity: 30 });
+    var material = new THREE.MeshPhongMaterial({ color: 0x68688a, ambient: 0xffffff, shininess: 30, reflectivity: 30, wireframe: true });
     var cube = new THREE.Mesh( geometry, material );
     var mesh = undefined;
 
@@ -390,16 +390,23 @@
 	    vFA[i] = vertices[i];
 	}
 	geometry.addAttribute('position', new THREE.BufferAttribute(vFA, 3));
+	geometry.computeFaceNormals();
+        geometry.computeVertexNormals();
+        geometry.computeBoundingBox();
 	if (mesh != undefined) {
 	    scene.remove(mesh);
 	}
 	mesh = new THREE.Mesh(geometry, material);
+	mesh.castShadow = true;
+	mesh.receiveShadow = true;
 	mesh.position.x -= mesh.position.x / 2.0;
 	mesh.position.y -= mesh.position.y / 2.0;
-	scene.add(mesh);	console.log("after adding mesh");
+	scene.add(mesh);
+	console.log("after adding mesh");
 	img = newImg;
     }
-    
+
+    var spotLight;
     function init() {
 	//img = undefined;
 	
@@ -407,14 +414,33 @@
 	renderer.setClearColor(0xffffff, 1);
 	renderer.shadowMapEnabled = true;
 	scene.add( cube );
+	
+	// draw a floor (plane) for the cube to sit on 
+	var planeGeometry = new THREE.PlaneBufferGeometry(640, 400);
+	var planeMaterial = new THREE.MeshPhongMaterial({ color: 0xefefef });
+	var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+	// make the plane recieve shadow from the cube
+	plane.castShadow = true;
+	plane.receiveShadow = true;
+	plane.receiveShadow = true;
+	scene.add(plane);
+	
 
 	var light = new THREE.AmbientLight( 0x404040 ); // soft white light
 	scene.add( light );
 
-	var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-	directionalLight.position.set( 0, 1, 0 );
-	directionalLight.castShow = true;
-	scene.add( directionalLight );
+	spotLight = new THREE.SpotLight( 0xffffff);
+	spotLight.position.set(0, 0, 100);
+	spotLight.castShadow = true;
+	spotLight.shadowDarkness = 0.5;
+//			spotLight.shadowCameraVisible = true;
+	spotLight.castShadow = true;
+	spotLight.shadowMapWidth = 512;
+	spotLight.shadowMapHeight = 512;
+	spotLight.intensity = 1;
+	spotLight.shadowDarkness = 0.1;
+	spotLight.shadowCameraNear = true;   // this line makes the shadow appear, hooray!
+	scene.add( spotLight );
 
 
 	
@@ -440,6 +466,7 @@
     // var math = tdl.math;
     var lastTime;
     var angularSpeed = 0.02;
+    var sphere = undefined;
     function loop(frameTime) {
 	FabInPocket.stopLoop = window.requestAnimationFrame( loop );
 
@@ -457,24 +484,41 @@
 
 	var time = (new Date()).getTime();
         var timeDiff = time - lastTime;
-        var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
-        cube.rotation.z += 0.01; /*angleChange;*/
-	if (mesh != undefined) {
-	    mesh.rotation.z += 0.01;
-	}
+        // var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
+        // cube.rotation.z += 0.01; /*angleChange;*/
+	// if (mesh != undefined) {
+	//     mesh.rotation.z += 0.01;
+	// }
 	lastTime = time;
+//	spotLight.position.set(camera.position.x, camera.position.y, camera.position.z);
 	// g_fpsTimer.update(elapsedTime);
-	// document.getElementById('fps').innerHTML = g_fpsTimer.averageFPS;
+	//	spotLight.position.z += 1;
+	// spotLight.position.z = 300;
+	if (sphere != undefined) {
+	    scene.remove(sphere);
+	}
+	// sphere = new THREE.Mesh(new THREE.SphereGeometry(0.1, 32, 32 ), material);
+	// sphere.position.set(spotLight.position.x, spotLight.position.y, spotLight.position.z);
+	// scene.add(sphere);
+	document.getElementById('fps').innerHTML = spotLight.position.z;//g_fpsTimer.averageFPS;
 	
 	// // Compute new eye position
 	var dist = (heightmapCanvas.clientWidth + heightmapCanvas.clientHeight + zMax) / 3.0;
 	dist = (img.width + img.height + zMax) / 3.0;
+	dist = dist / 3.0;
+	if (mesh != undefined && mesh.geometry != undefined) {
+	    mesh.geometry.computeBoundingSphere();
+	    dist = mesh.geometry.boundingSphere.radius;
+	}
 	// dist = 1;
-	// camera.position.x = Math.sin(frameTime * 0.0003) * 1.5 * dist;
-	// camera.position.z = Math.cos(frameTime * 0.0003) * 1.5 * dist;
-	camera.position.z = dist
-	// TODO
+	camera.position.x = Math.sin(frameTime * 0.0003) * 1 * dist;
+	camera.position.y = Math.cos(frameTime * 0.0003) * 1 * dist;
+	camera.position.z = 1.5 * dist;
 	camera.lookAt(new THREE.Vector3(0, 0, 0 ));
+	spotLight.position.z = 5 * dist;
+	// spotLight.position.x = camera.position.x;
+	// spotLight.position.y = camera.position.y;
+
 
 	renderer.render(scene, camera);
     }
