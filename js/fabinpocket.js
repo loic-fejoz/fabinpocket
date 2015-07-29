@@ -1,15 +1,33 @@
 ;
 (function($) {
-    "use strict";    
+    "use strict";
+
+    const TIMER_NB_FRAMES = 16;
+    function FPSTimer() {
+	this.timeTable = [];
+	this.currentTimeTableIndex = 0;
+	this.totalTime = TIMER_NB_FRAMES;
+	for(var i = 0; i < TIMER_NB_FRAMES; i++) {
+	    this.timeTable[i] = 1.0;
+	}
+	this.averageFPS = 0;
+    }
+
+    /**
+     * @param {number} elapsed time in milliseconds since last frame.
+     */
+    FPSTimer.prototype.update = function(elapsedTime) {
+	elapsedTime = elapsedTime * 0.001; // Convert to seconds
+	this.totalTime = this.totalTime + elapsedTime - this.timeTable[this.currentTimeTableIndex];
+	this.timeTable[this.currentTimeTableIndex] = elapsedTime;
+	this.currentTimeTableIndex = (this.currentTimeTableIndex + 1) % TIMER_NB_FRAMES;
+	this.averageFPS = Math.floor((1.0 / (this.totalTime / TIMER_NB_FRAMES)) + 0.5);
+    }
+    var fpsTimer = new FPSTimer();
+    
     var FabInPocket = {zScale: 1.0};
     document.FabInPocket = FabInPocket;
     var glcanvas = FabInPocket.glcanvas = document.getElementById('previewcanvas');
-    // glcanvas.width = 640;
-    // glcanvas.height = 400;
-    // var gl = tdl.webgl.setupWebGL(glcanvas);
-    // if (!gl) {
-    // 	alert("Unable to initialize WebGL. Your browser may not support it.");
-    // }
     
     var shaderProgram;
     var vertexPositionAttribute;
@@ -355,7 +373,6 @@
     var vertices;
     var img;
     
-     // var g_fpsTimer;           // object to measure frames per second;
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera( 75, 600.0 / 400.0, 0.1, 50000 );
     var renderer = new THREE.WebGLRenderer({canvas: glcanvas});
@@ -476,31 +493,17 @@
 	
 	var elapsedTime;
 	if (lastFrameTime == undefined) {
-	    elapsedTime = 0.0;
+	    elapsedTime = 1.0;
 	} else {
-	    elapsedTime = (frameTime - lastFrameTime) * 0.001;
+	    elapsedTime = frameTime - lastFrameTime;
 	}
 	lastFrameTime = frameTime;
 
 	var time = (new Date()).getTime();
         var timeDiff = time - lastTime;
-        // var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
-        // cube.rotation.z += 0.01; /*angleChange;*/
-	// if (mesh != undefined) {
-	//     mesh.rotation.z += 0.01;
-	// }
 	lastTime = time;
-//	spotLight.position.set(camera.position.x, camera.position.y, camera.position.z);
-	// g_fpsTimer.update(elapsedTime);
-	//	spotLight.position.z += 1;
-	// spotLight.position.z = 300;
-	if (sphere != undefined) {
-	    scene.remove(sphere);
-	}
-	// sphere = new THREE.Mesh(new THREE.SphereGeometry(0.1, 32, 32 ), material);
-	// sphere.position.set(spotLight.position.x, spotLight.position.y, spotLight.position.z);
-	// scene.add(sphere);
-	document.getElementById('fps').innerHTML = spotLight.position.z;//g_fpsTimer.averageFPS;
+	fpsTimer.update(elapsedTime);
+	document.getElementById('fps').innerHTML = fpsTimer.averageFPS;
 	
 	// // Compute new eye position
 	var dist = (heightmapCanvas.clientWidth + heightmapCanvas.clientHeight + zMax) / 3.0;
