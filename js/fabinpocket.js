@@ -1,15 +1,15 @@
 ;
-(function(tdl,$) {
+(function($) {
     "use strict";    
     var FabInPocket = {zScale: 1.0};
     document.FabInPocket = FabInPocket;
     var glcanvas = FabInPocket.glcanvas = document.getElementById('previewcanvas');
-    glcanvas.width = 640;
-    glcanvas.height = 400;
-    var gl = tdl.webgl.setupWebGL(glcanvas);
-    if (!gl) {
-	alert("Unable to initialize WebGL. Your browser may not support it.");
-    }
+    // glcanvas.width = 640;
+    // glcanvas.height = 400;
+    // var gl = tdl.webgl.setupWebGL(glcanvas);
+    // if (!gl) {
+    // 	alert("Unable to initialize WebGL. Your browser may not support it.");
+    // }
     
     var shaderProgram;
     var vertexPositionAttribute;
@@ -354,9 +354,17 @@
     var squareVerticesBuffer;
     var vertices;
     var img;
+    
+     // var g_fpsTimer;           // object to measure frames per second;
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera( 75, 600.0 / 400.0, 0.1, 50000 );
+    var renderer = new THREE.WebGLRenderer({canvas: glcanvas});
+    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    var material = new THREE.MeshPhongMaterial({ color: 0xff0000, ambient: "white", shininess: 30, reflectivity: 30 });
+    var cube = new THREE.Mesh( geometry, material );
+    var mesh = undefined;
+
     function initBuffers(loadImageIntoCanvas) {
-	squareVerticesBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
 	
 	vertices = [
 		-1.0, -1.0, -1.0,
@@ -367,32 +375,53 @@
 	         1.0,  1.0, -1.0
 	];
 	var newImg = loadImageIntoCanvas ? new Image() : img;
+	console.log("before relaod3D");
 	var v = reload3D(newImg, loadImageIntoCanvas);
+	console.log("after relaod3D");
 	if (v !== undefined) {
 	    vertices = v;
 	}
 	prepareSTLExport(vertices, newImg);
 	preparePNGExport();
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+	console.log("before adding mesh");
+	geometry = new THREE.BufferGeometry();
+	var vFA = new Float32Array(vertices.length);
+	for(var i=0; i < vertices.length; i++) {
+	    vFA[i] = vertices[i];
+	}
+	geometry.addAttribute('position', new THREE.BufferAttribute(vFA, 3));
+	if (mesh != undefined) {
+	    scene.remove(mesh);
+	}
+	mesh = new THREE.Mesh(geometry, material);
+	scene.add(mesh);
+	console.log("after adding mesh");
 	img = newImg;
     }
     
-    var g_fpsTimer;           // object to measure frames per second;
-    
     function init() {
 	img = undefined;
-  	if (gl) {
-    	    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); // See http://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
-            gl.clearColor(0.9, 0.9, 0.9, 1.0);  // Set clear color to dark blue, fully opaque
-            gl.clearDepth(1.0);                 // Clear everything
-            gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-            gl.enable(gl.CULL_FACE);
-            gl.depthFunc(gl.LESS);            // Near things obscure far things
-            initShaders();
-            initBuffers(true);
-            g_fpsTimer = new tdl.fps.FPSTimer();
-            loop(performance.now());
-        }
+	
+	renderer.setSize(600, 400);
+	renderer.setClearColor(0xffffff, 1);
+	renderer.shadowMapEnabled = true;
+	scene.add( cube );
+
+	var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+	scene.add( light );
+
+	var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+	directionalLight.position.set( 0, 1, 0 );
+	directionalLight.castShow = true;
+	scene.add( directionalLight );
+
+	camera.position.x = 5;
+	camera.position.y = 5;
+	camera.position.z = 5;
+	camera.lookAt(new THREE.Vector3(0, 0, 0 ));
+//	camera.rotation.z = Math.PI / 2.0;
+	initBuffers(true);
+	loop(performance.now());
     }
     
     var lastFrameTime = undefined;
@@ -404,8 +433,10 @@
     var viewProjection = new Float32Array(16);
     var viewInverse = new Float32Array(16);
     var viewProjectionInverse = new Float32Array(16);
-    var fast = tdl.fast;
-    var math = tdl.math;
+    // var fast = tdl.fast;
+    // var math = tdl.math;
+    var lastTime;
+    var angularSpeed = 0.02;
     function loop(frameTime) {
 	FabInPocket.stopLoop = window.requestAnimationFrame( loop );
 
@@ -420,49 +451,33 @@
 	    elapsedTime = (frameTime - lastFrameTime) * 0.001;
 	}
 	lastFrameTime = frameTime;
-	g_fpsTimer.update(elapsedTime);
-	document.getElementById('fps').innerHTML = g_fpsTimer.averageFPS;
+
+	var time = (new Date()).getTime();
+        var timeDiff = time - lastTime;
+        var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
+        cube.rotation.z += 0.01; /*angleChange;*/
+	if (mesh != undefined) {
+	    mesh.rotation.z += 0.01;
+	}
+	lastTime = time;
+	// g_fpsTimer.update(elapsedTime);
+	// document.getElementById('fps').innerHTML = g_fpsTimer.averageFPS;
 	
-	// Compute new eye position
+	// // Compute new eye position
 	var dist = (heightmapCanvas.clientWidth + heightmapCanvas.clientHeight + zMax) / 3.0;
 	dist = (img.width + img.height + zMax) / 3.0;
-	eyePosition[0] = Math.sin(frameTime * 0.0003) * 1.5 * dist;
-	eyePosition[1] = Math.cos(frameTime * 0.0003) * 1.5 * dist;
-  	eyePosition[2] = dist;
-    	
-	// Clear the canvas before we start drawing on it.
-	
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	
-	fast.matrix4.perspective(
-            projection,
-            math.degToRad(60),
-            glcanvas.clientWidth / glcanvas.clientHeight,
-            1,
-            5000);
-    	fast.matrix4.lookAt(
-            view,
-            eyePosition,
-            lookAt,
-            up);
-    	fast.matrix4.mul(viewProjection, view, projection);
-	
-	gl.bindBuffer(gl.ARRAY_BUFFER, squareVerticesBuffer);
-	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-	
-	var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-  	gl.uniformMatrix4fv(mvUniform, false, viewProjection);
-	
-	var zMaxUniform = gl.getUniformLocation(shaderProgram, "zMax");
-  	gl.uniform1f(zMaxUniform, zMax);
-	
-	gl.drawArrays(gl.TRIANGLES, 0, Math.floor(vertices.length / 3));
+	// dist = 1;
+	camera.position.x = Math.sin(frameTime * 0.0003) * 1.5 * dist;
+	camera.position.z = Math.cos(frameTime * 0.0003) * 1.5 * dist;
+	camera.position.y = dist;
+
+	renderer.render(scene, camera);
     }
     
     document.fabinpocketInit = init;
     document.fabinpocketUpdate3D = initBuffers;
     document.addEventListener("DOMContentLoaded", init); // Start the cycle
-})(tdl);
+})(jQuery);
 
 (function($) {
     "use strict";
@@ -494,7 +509,7 @@
          */
 	$("#heightmap").on('load', function() {
 	    update3D(true);
-	})
+	});
 
 	/**
          * Manage tabs
