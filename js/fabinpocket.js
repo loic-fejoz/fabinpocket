@@ -329,7 +329,7 @@
 	exportLink.href = canvas.toDataURL('image/png');
     }
 
-    $('#export-png').on('click', function () {
+    $('#export-shape').on('click', function () {
 	prepareShapePNGExport();
     });
     
