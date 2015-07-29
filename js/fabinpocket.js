@@ -516,9 +516,6 @@
 	camera.position.z = 1.5 * dist;
 	camera.lookAt(new THREE.Vector3(0, 0, 0 ));
 	spotLight.position.z = 5 * dist;
-	// spotLight.position.x = camera.position.x;
-	// spotLight.position.y = camera.position.y;
-
 
 	renderer.render(scene, camera);
     }
