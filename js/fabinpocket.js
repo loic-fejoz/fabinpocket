@@ -22,7 +22,7 @@
 	this.timeTable[this.currentTimeTableIndex] = elapsedTime;
 	this.currentTimeTableIndex = (this.currentTimeTableIndex + 1) % TIMER_NB_FRAMES;
 	this.averageFPS = Math.floor((1.0 / (this.totalTime / TIMER_NB_FRAMES)) + 0.5);
-    }
+    };
     var fpsTimer = new FPSTimer();
     
     var FabInPocket = {zScale: 1.0};
@@ -392,15 +392,12 @@
 	         1.0,  1.0, -1.0
 	];
 	var newImg = loadImageIntoCanvas ? new Image() : img;
-	console.log("before relaod3D");
 	var v = reload3D(newImg, loadImageIntoCanvas);
-	console.log("after relaod3D");
 	if (v !== undefined) {
 	    vertices = v;
 	}
 	prepareSTLExport(vertices, newImg);
 	preparePNGExport();
-	console.log("before adding mesh");
 	geometry = new THREE.BufferGeometry();
 	var vFA = new Float32Array(vertices.length);
 	for(var i=0; i < vertices.length; i++) {
@@ -419,15 +416,23 @@
 	mesh.position.x -= mesh.position.x / 2.0;
 	mesh.position.y -= mesh.position.y / 2.0;
 	scene.add(mesh);
-	console.log("after adding mesh");
 	img = newImg;
     }
+
+    function onResize() {
+	var forCanvasSize = document.getElementById('preview-wrapper');
+	var width = forCanvasSize.offsetWidth;
+	var height = forCanvasSize.offsetHeight;
+	renderer.setSize(width, height);
+	camera.aspect = width / height;
+    }
+
+    $( window ).resize(onResize);
 
     var spotLight;
     function init() {
 	//img = undefined;
-	
-	renderer.setSize(600, 400);
+	onResize();
 	renderer.setClearColor(0xffffff, 1);
 	renderer.shadowMapEnabled = true;
 	scene.add( cube );
