@@ -25,7 +25,7 @@
 	    <li><a href="#shape-wrapper" class="tabs__tab is-active">1. Shape</a></li>
 	    <li><a href="#engrave-tabs" class="tabs__tab">2. Engrave</a></li>
 	    <li><a href="#print-tabs" class="tabs__tab">3. Print</a></li>
-	    <li id="menu-wrapper"><a href="#menu" id="menu-button"><i class="fa fa-bars"></i></a>
+	    <li id="menu-wrapper"><a href="#menu" id="menu-button"><i class="fa fa-bars"></i> Menu</a>
 	      <div class="menu">
 		<ul>
 		  <li><i class="fa fa-upload"></i> <input type="file" id="file-upload" /></li>
@@ -63,36 +63,7 @@
       Your browser doesn't ap pear to support the HTML5 <code>&lt;canvas&gt;</code> element.
     </canvas>
   </body>
-  <script id="shader-vs" type="x-shader/x-vertex">
-  attribute vec3 aVertexPosition_modelspace;
-
-  uniform mat4 uMVMatrix;
-  uniform float zMax;
-
-  varying mediump vec4 color;
-
-  void main(void) {
-    gl_Position = uMVMatrix *  vec4(aVertexPosition_modelspace, 1.0);
-    color = vec4(aVertexPosition_modelspace.z / zMax, aVertexPosition_modelspace.z / zMax, aVertexPosition_modelspace.z / zMax, 1.0);
-  }
-</script>
-<!-- color = vec3(1.0 - (aVertexPosition_modelspace.z / 255.0), aVertexPosition_modelspace.z / 255.0, 0.0); -->
-<script id="shader-fs" type="x-shader/x-fragment">
-  varying mediump vec4 color;
-
-  void main(void) {
-    gl_FragColor = color;
-  }
-</script>
-<script type="text/javascript" src="js/tdl/base.js"></script>
-<script type="text/javascript">
-  tdl.require('tdl.fast');
-  tdl.require('tdl.webgl');
-  tdl.require('tdl.programs');
-  tdl.require('tdl.fps');
-  tdl.require('tdl.math');
-  tdl.require('tdl.log');
-</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
 <script type="text/javascript">
 (function ($) {
     if (document.jQuery === undefined) {
