@@ -312,6 +312,10 @@
 	exportLink.setAttribute('href', url);
     }
 
+    $('#export-stl').on('click', function () {
+	prepareSTLExport(vertices, img);
+    });
+
     /**
      * Link #export-png to computed heightmap.
      */
@@ -320,6 +324,10 @@
 	var canvas = document.getElementById("computedheightmapcanvas");
 	exportLink.href = canvas.toDataURL('image/png');
     }
+
+    $('#export-png').on('click', function () {
+	preparePNGExport();
+    });
     
     function reload3D(img, loadImageIntoCanvas) {
 	// heightmapCanvas.width = 640;
@@ -396,8 +404,6 @@
 	if (v !== undefined) {
 	    vertices = v;
 	}
-	prepareSTLExport(vertices, newImg);
-	preparePNGExport();
 	geometry = new THREE.BufferGeometry();
 	var vFA = new Float32Array(vertices.length);
 	for(var i=0; i < vertices.length; i++) {
