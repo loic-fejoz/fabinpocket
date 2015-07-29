@@ -394,13 +394,14 @@
 	    scene.remove(mesh);
 	}
 	mesh = new THREE.Mesh(geometry, material);
-	scene.add(mesh);
-	console.log("after adding mesh");
+	mesh.position.x -= mesh.position.x / 2.0;
+	mesh.position.y -= mesh.position.y / 2.0;
+	scene.add(mesh);	console.log("after adding mesh");
 	img = newImg;
     }
     
     function init() {
-	img = undefined;
+	//img = undefined;
 	
 	renderer.setSize(600, 400);
 	renderer.setClearColor(0xffffff, 1);
@@ -415,11 +416,13 @@
 	directionalLight.castShow = true;
 	scene.add( directionalLight );
 
+
+	
 	camera.position.x = 5;
 	camera.position.y = 5;
 	camera.position.z = 5;
+	camera.up.set(0, 0, 1);
 	camera.lookAt(new THREE.Vector3(0, 0, 0 ));
-//	camera.rotation.z = Math.PI / 2.0;
 	initBuffers(true);
 	loop(performance.now());
     }
@@ -467,9 +470,11 @@
 	var dist = (heightmapCanvas.clientWidth + heightmapCanvas.clientHeight + zMax) / 3.0;
 	dist = (img.width + img.height + zMax) / 3.0;
 	// dist = 1;
-	camera.position.x = Math.sin(frameTime * 0.0003) * 1.5 * dist;
-	camera.position.z = Math.cos(frameTime * 0.0003) * 1.5 * dist;
-	camera.position.y = dist;
+	// camera.position.x = Math.sin(frameTime * 0.0003) * 1.5 * dist;
+	// camera.position.z = Math.cos(frameTime * 0.0003) * 1.5 * dist;
+	camera.position.z = dist
+	// TODO
+	camera.lookAt(new THREE.Vector3(0, 0, 0 ));
 
 	renderer.render(scene, camera);
     }
