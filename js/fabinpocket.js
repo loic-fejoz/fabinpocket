@@ -86,67 +86,96 @@
 
     /*========================== Distance computation ========================================*/
 
-    
-    function sweepTopToBottom(data, img) {
-	for(var x=0; x < (img.width-1); x++) {
-	    for(var y=0; y < (img.height-1); y++) {
-		var i_xy = x + (y * img.width);
-		var z_xy = data[i_xy];
-		var i_xy1 = x + ((y+1) * img.width);
-		var z_xy1 = data[i_xy1];
-		data[i_xy1] = Math.min(z_xy + 1, z_xy1);
-	    }
-	}
-    }
-    
-    function sweepBottomToTop(data, img) {
-	for(var x=0; x < (img.width-1); x++) {
-	    for(var y= img.height-1; y >= 0; y--) {
-		var i_xy = x + (y * img.width);
-		var z_xy = data[i_xy];
-		var i_xym1 = x + ((y-1) * img.width);
-		var z_xym1 = data[i_xym1];
-		data[i_xym1] = Math.min(z_xy + 1, z_xym1);
-	    }
-	}
-    }
-    
-    function sweepLeftToRight(data, img) {
-	for(var y=0; y < (img.height-1); y++) {
-	    for(var x=0; x < (img.width-1); x++) {
-		var i_xy = x + (y * img.width);
-		var z_xy = data[i_xy];
-		var i_x1y = x + 1 + (y * img.width);
-		var z_x1y = data[i_x1y];
-		data[i_x1y] = Math.min(z_xy + 1, z_x1y);
-	    }
-	}
-    }
-    
-    function sweepRightToLeft(data, img) {
-	for(var y=0; y < (img.height-1); y++) {
-	    for(var x=(img.width-1); x >= 0; x--) {
-		var i_xy = x + (y * img.width);
-		var z_xy = data[i_xy];
-		var i_xm1y = x - 1 + (y * img.width);
-		var z_xm1y = data[i_xm1y];
-		data[i_xm1y] = Math.min(z_xy + 1, z_xm1y);
-	    }
-	}
-    }
 
     /**
-     * Compute an approximate distance.
-     * See A GENERAL ALGORITHM FOR COMPUTING DISTANCE TRANSFORMS IN LINEAR TIME,
-     * by A. MEIJSTER‚ J.B.T.M. ROERDINK and W.H. HESSELINK
+     * @param data the array of heights indexed by x + y * img.width
+     * @param img provides the size of the array
+     * @param zCut the height to cut at
      */
-    function sweep(data, img) {
-	sweepTopToBottom(data, img);
-	sweepBottomToTop(data, img);
-	sweepLeftToRight(data, img);
-	sweepRightToLeft(data, img);
+    function meijsterFirstPhase(data, img, zCut) {
+	const infinity = Number.POSITIVE_INFINITY;
+	var g = new Array(data.length);
+	for(var x=0; x < img.width; x++) {
+	    // scan 1
+	    if (data[x] <= zCut) {
+		g[x] = 0;
+	    } else {
+		g[x] = infinity;
+	    }
+	    var index;
+	    for(var y = 1; y < img.height; y++) {
+		index = x + (y * img.width);
+		if (data[index] <= zCut) {
+		    g[index] = 0;
+		} else {
+		    g[index] = 1 + g[x + (y-1) * img.width];
+		}
+	    }
+	    // scan 2
+	    var index1;
+	    for(var y = img.height-2; y >= 0; y--) {
+		index = x + (y * img.width);
+		index1 = x + ((y+1) * img.width);
+		if (g[index1] < g[index]) {
+		    g[index] = 1 + g[index1];
+		}
+	    }
+	}
+	return g;
     }
 
+    function Sep(i, u, g, y, img) {
+	var gu = g[u + y * img.width];
+	var gi = g[i + y * img.width];
+	return Math.floor((u * u - i * i + gu * gu - gi * gi) / (2 * (u - i)));
+    }
+    
+    function meijsterSecondPhase(data, img, g, f) {
+	var dt = new Array(data.length);
+	var q = 0;
+	var s = new Array(img.width);
+	var t = new Array(img.width);
+	for(var y = 0; y < img.height; y++) {
+	    q = 0;
+	    s[0] = 0;
+	    t[0] = 0;
+	    // scan 3
+	    for(var u=1; u < img.width; u++) {
+		while (q >= 0 && (f(t[q], s[q], y) > f(t[q], u, y))) {
+		    q--;
+		}
+		if (q < 0) {
+		    q = 0;
+		    s[0] = u;
+		} else {
+		    var w = 1 + Sep(s[q], u, g, y, img);
+		    if (w < img.width) {
+			q++;
+			s[q] = u;
+			t[q] = w;
+		    }
+		}
+	    }
+	    // scan 4
+	    for(var u=img.width-1; u >= 0; u--) {
+		dt[u + (y * img.width)] = Math.sqrt(f(u, s[q], y));
+		if (u == t[q]) {
+		    q--;
+		}
+	    }
+	}
+	return dt;
+    }
+
+    function meijsterEDT(heights, img, zCut) {
+	var g = meijsterFirstPhase(heights, img, zCut);
+	var f = function EDT(x, i, y) {
+	    var g_i = g[i + y * img.width];
+	    return (x-i) * (x-i) +  g_i * g_i;
+	};
+	return meijsterSecondPhase(heights, img, g, f);
+    }
+    
     /*========================== Image to 3D ========================================*/
     
     /**
@@ -178,7 +207,7 @@
      * Mark tops of the hills as zero.
      */
     function initSkeleton(original, src, img, output) {
-	var dMax = Math.max(img.width, img.height);
+	var dMax = img.width + img.height;
 	var i = output.length;
 	while(i--) {
 	    output[i] = dMax;
@@ -207,20 +236,16 @@
 	var ctx = canvas.getContext('2d');
 	var modifiedHeights = new Array(heights.length);
 	// First initialize with maximum distance when inside
-	var zCut = 0.1;
-	var i = heights.length;
-	while(i--) {
-	    modifiedHeights[i] = (heights[i] > zCut)  ? Math.max(img.width, img.height) : 0;
-	}
-	// Then compute distance from edges
-	sweep(modifiedHeights, img);
+	var zCut = 0.0;
+	var modifiedHeights =  meijsterEDT(heights, img, zCut);
 	
+	var i = heights.length;	
 	var skeleton = new Array(heights.length);
 	// Then Init local top, ie skeleton
 	initSkeleton(heights, modifiedHeights, img, skeleton);
 	
 	// Then compute distance from skeleton
-	sweep(skeleton, img);
+	var skeleton =  meijsterEDT(skeleton, img, 0.0);
 	
 	// Convert distance to imgData
 	var longestDistance = 0;
