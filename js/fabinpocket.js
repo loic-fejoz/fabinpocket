@@ -321,7 +321,7 @@
 	    i += 3;
 	    sb += '  endloop\n endfacet\n';
 	}
-	sb += 'ensolid fabinpocket\n';
+	sb += 'endsolid fabinpocket\n';
 	var exportLink = document.getElementById('export-stl');
 	var blob = new Blob([sb], {type: "octet/stream"});
         var url = window.URL.createObjectURL(blob);
